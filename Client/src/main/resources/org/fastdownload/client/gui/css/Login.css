@@ -1,0 +1,8 @@
+.root {
+    -fx-background-image: url("/org/fastdownload/client/gui/icons/background.jpg");
+}
+
+.label {
+    -fx-alignment: center;
+    -fx-text-alignment: justify;
+}

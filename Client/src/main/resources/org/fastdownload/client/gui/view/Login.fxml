@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="root" prefHeight="300.0" prefWidth="400.0" stylesheets="@../css/Login.css" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.fastdownload.client.gui.controller.LoginController">
+   <children>
+      <VBox fx:id="vBox" spacing="10">
+         <children>
+            <HBox alignment="CENTER" spacing="3.0">
+               <children>
+                  <Label alignment="CENTER" prefHeight="40.0" prefWidth="80.0" text="账号:">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="id" promptText="请输入账号">
+                     <font>
+                        <Font size="16.0" />
+                     </font></TextField>
+               </children>
+               <padding>
+                  <Insets top="30.0" />
+               </padding>
+            </HBox>
+            <HBox alignment="CENTER" spacing="3.0">
+               <children>
+                  <Label alignment="CENTER" prefHeight="40.0" prefWidth="80.0" text="密码:">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Label>
+                  <PasswordField fx:id="pwd" promptText="请输入密码">
+                     <font>
+                        <Font size="16.0" />
+                     </font></PasswordField>
+               </children>
+            </HBox>
+            <HBox fx:id="hBox3" alignment="CENTER" spacing="3.0">
+               <children>
+                  <Label alignment="CENTER" prefHeight="40.0" prefWidth="80.0" text="账号类型:">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Label>
+                  <ChoiceBox fx:id="choice" prefWidth="150.0" />
+               </children>
+            </HBox>
+            <HBox fx:id="hBox4" alignment="BOTTOM_CENTER" spacing="20.0">
+               <children>
+                  <Button fx:id="btnLogin" mnemonicParsing="false" onAction="#login" prefHeight="60.0" prefWidth="100.0" text="登录">
+                     <font>
+                        <Font size="24.0" />
+                     </font>
+                  </Button>
+                  <Button fx:id="btnVLogin" mnemonicParsing="false" onAction="#vLogin" text="暂不登录" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

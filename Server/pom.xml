@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+
+   <groupId>org.fastdownload</groupId>
+   <artifactId>Server</artifactId>
+   <version>1.0-SNAPSHOT</version>
+
+   <properties>
+      <java.version>1.8</java.version>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <maven.compiler.source>1.8</maven.compiler.source>
+      <maven.compiler.target>1.8</maven.compiler.target>
+   </properties>
+
+   <dependencies>
+      <!--MYSQL-->
+      <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+      <dependency>
+         <groupId>mysql</groupId>
+         <artifactId>mysql-connector-java</artifactId>
+         <version>5.1.49</version>
+      </dependency>
+
+      <!--JUnit5-->
+      <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
+      <dependency>
+         <groupId>org.junit.jupiter</groupId>
+         <artifactId>junit-jupiter-api</artifactId>
+         <version>5.7.0-M1</version>
+         <scope>test</scope>
+      </dependency>
+
+      <!--Lombok-->
+      <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+      <dependency>
+         <groupId>org.projectlombok</groupId>
+         <artifactId>lombok</artifactId>
+         <version>1.18.12</version>
+         <scope>provided</scope>
+      </dependency>
+
+      <!--MD5码-->
+      <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+      <dependency>
+         <groupId>com.google.guava</groupId>
+         <artifactId>guava</artifactId>
+         <version>29.0-jre</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
+      <dependency>
+         <groupId>commons-codec</groupId>
+         <artifactId>commons-codec</artifactId>
+         <version>1.14</version>
+      </dependency>
+
+      <!--Log-->
+      <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
+      <dependency>
+         <groupId>org.apache.logging.log4j</groupId>
+         <artifactId>log4j-slf4j-impl</artifactId>
+         <version>2.13.3</version>
+      </dependency>
+
+      <!-- JSON -->
+      <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+      <dependency>
+         <groupId>com.google.code.gson</groupId>
+         <artifactId>gson</artifactId>
+         <version>2.8.6</version>
+      </dependency>
+
+   </dependencies>
+
+   <repositories>
+      <repository>
+         <id>aliyunmaven</id>
+         <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+      </repository>
+   </repositories>
+</project>
