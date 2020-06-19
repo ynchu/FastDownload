@@ -7,7 +7,23 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
+
+/**
+ * properties file read and write class<br>
+ *
+ * @author Administrator
+ */
 public class PropertiesUtils {
+    /**
+     * 配置文件的默认位置
+     */
+    private static final String DEFAULT_CONFIG_PATH = "docs" + File.separator + "init.properties";
+
+    /**
+     * 配置文件位置（可更改）
+     */
+    private static String fileName = "docs/init.properties";
+
     /**
      * 将键值对写入文件
      *
@@ -74,14 +90,22 @@ public class PropertiesUtils {
         return result;
     }
 
-//    public static void main(String[] args) {
+    public static String getFileName() {
+        return fileName;
+    }
+
+    public static void setFileName(String fileName) {
+        PropertiesUtils.fileName = fileName;
+    }
+
+    //    public static void main(String[] args) {
 ////         PropertiesUtil.writeToProperties(new KeyValue("test", "test"), "测试写入test", "docs/test.properties");
 ////        PropertiesUtil.writeToProperties(new KeyValue("test1", "test1"), "测试写入test1", "docs/test.properties");
 ////        PropertiesUtil.writeToProperties(new KeyValue("test2", "test2"), "测试写入test2", "docs/test.properties");
 //
 ////        PropertiesUtil.writeToProperties("width", "800", "程序初始化。。。", "docs/init.properties");
-////        PropertiesUtil.writeToProperties("width", "800", null, "docs/init.properties");
-//        String width = PropertiesUtil.readFromProperties("width", "docs/init.properties");
-//        System.out.println(width);
+//        PropertiesUtils.writeToProperties("localStorageAddress", "C:\\FastDownload\\Data", null, "docs/init.properties");
+////        String width = PropertiesUtils.readFromProperties("width", "docs/init.properties");
+////        System.out.println(width);
 //    }
 }

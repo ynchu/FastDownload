@@ -1,4 +1,4 @@
-package org.fastdownload.client;
+package org.fastdownload.client.gui;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -9,11 +9,11 @@ import javafx.stage.Stage;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FastDownloadClientApplication extends Application {
+public class Client extends Application {
     /**
      * 控制器类MAP
      */
-    public static Map<String, Object> controllers = new HashMap<>();
+//    public static Map<String, Object> controllers = new HashMap<>();
 
     /**
      * 主窗口

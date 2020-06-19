@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<AnchorPane fx:id="root" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.171"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.fastdownload.client.gui.DownloadWindowController">
+   <children>
+      <VBox fx:id="vBox" alignment="TOP_CENTER" prefHeight="400.0" prefWidth="600.0">
+         <children>
+            <HBox fx:id="hBox1" alignment="CENTER" prefWidth="200.0" spacing="10.0">
+               <children>
+                  <TextField fx:id="input" prefHeight="40.0" prefWidth="300.0" promptText="请输入文件路径文件名"
+                             style="-fx-background-radius: 10;" text="C:\FastDownload\Data\1.flv">
+                     <font>
+                        <Font size="16.0"/>
+                     </font>
+                  </TextField>
+                  <Button mnemonicParsing="false" onAction="#download" prefHeight="40.0"
+                          style="-fx-background-radius: 10;" text="下载">
+                     <font>
+                        <Font size="16.0"/>
+                     </font>
+                  </Button>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" top="20.0"/>
+               </padding>
+            </HBox>
+            <HBox fx:id="hBox2" alignment="TOP_CENTER" prefWidth="200.0" spacing="3.0" visible="false">
+               <children>
+                  <ProgressBar fx:id="progressBar" prefHeight="25.0" prefWidth="500.0" progress="0.0"/>
+                  <ProgressIndicator fx:id="progressIndicator" prefHeight="42.0" prefWidth="42.0" progress="0.0"/>
+               </children>
+               <padding>
+                  <Insets bottom="20.0" top="20.0"/>
+               </padding>
+            </HBox>
+            <HBox fx:id="hBox3" alignment="TOP_CENTER" prefHeight="295.0" prefWidth="600.0">
+               <children>
+                  <ListView fx:id="listView" prefHeight="200.0" prefWidth="400.0"/>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
