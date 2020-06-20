@@ -6,6 +6,7 @@ import org.fastdownload.server.entity.FileBlock;
 import org.fastdownload.server.entity.FileInfo;
 import org.fastdownload.server.service.FileInfoService;
 import org.fastdownload.server.service.impl.FileInfoServiceImpl;
+import org.fastdownload.server.util.FileUtils;
 import org.fastdownload.server.util.JsonUtils;
 
 import java.io.File;
@@ -103,7 +104,7 @@ public class SendFileServer extends Thread {
          */
 
         // 线程数
-        final int N = 2;
+        final int N = 10;
         CountDownLatch startSignal = new CountDownLatch(1);
         CountDownLatch doneSignal = new CountDownLatch(N);
         // TODO 文件分块
@@ -130,8 +131,9 @@ public class SendFileServer extends Thread {
             System.out.println(JsonUtils.toJson(fileInfos));
 
             // TODO 先默认只发送第一本书,之后会根据链接查询,这样就有唯一性
-            FileInfo fileInfo = fileInfos.get(0);
-            String location = fileInfo.getLocation();
+//            FileInfo fileInfo = fileInfos.get(0);
+//            String location = fileInfo.getLocation();
+            String location = "C:\\FastDownload\\Data\\" + fileName;
             File file = new File(location);
             long fileLength = file.length();
 
@@ -152,12 +154,13 @@ public class SendFileServer extends Thread {
                     }
                 }
                 fileBlocks[i] = new FileBlock(start, end, raf);
-                System.out.println(fileBlocks[i]);
+                System.err.println(i + ": " + fileBlocks[i]);
             }
 
             // 4. 发送查询到的文件基本信息，然后直接封装成JSON发送
             // 文件名,文件大小,文件MD5码,文件块数目
-            FileBasicInfo basicInfo = new FileBasicInfo(file.getName(), fileLength, fileInfo.getMd5(), N);
+//            FileBasicInfo basicInfo = new FileBasicInfo(file.getName(), fileLength, fileInfo.getMd5(), N);
+            FileBasicInfo basicInfo = new FileBasicInfo(file.getName(), fileLength, FileUtils.getMD5(file), N);
             String jsonData = JsonUtils.toJson(basicInfo);
             System.out.println(jsonData);
             sendBuffer = jsonData.getBytes(StandardCharsets.UTF_8);
@@ -177,10 +180,8 @@ public class SendFileServer extends Thread {
             e.printStackTrace();
         }
 
-        // let all threads proceed
         startSignal.countDown();
         try {
-            // wait for all to finish
             doneSignal.await();
         } catch (InterruptedException e) {
             e.printStackTrace();

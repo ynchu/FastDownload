@@ -64,7 +64,7 @@ public class DownloadFileServer {
         try {
 
             // 1. 发送需要下载的文件名 TODO 之后通过参数传递进入,直接获取输入框中的数据
-            String fileName = "1.txt";
+            String fileName = "1.flv";
             byte[] sendBuffer = fileName.getBytes();
             DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, serverInetAddress, serverPort);
             client.send(sendPacket);

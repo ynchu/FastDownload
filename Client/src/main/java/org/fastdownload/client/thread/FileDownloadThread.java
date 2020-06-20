@@ -129,8 +129,8 @@ public class FileDownloadThread extends Thread {
 
                 // MD5码校验
                 boolean equals = FileUtils.md5Encode(dataPackage.getData()).trim().equals(new String(dataPackage.getCheck(), StandardCharsets.UTF_8).trim());
-                System.out.println(Thread.currentThread().getName() + "发送的MD5: " + new String(dataPackage.getCheck(), StandardCharsets.UTF_8).trim());
-                System.out.println(Thread.currentThread().getName() + "计算的MD5: " + FileUtils.md5Encode(dataPackage.getData()).trim());
+//                System.out.println("线程" + id + " 发送的MD5: " + new String(dataPackage.getCheck(), StandardCharsets.UTF_8).trim());
+//                System.out.println("线程" + id + " 计算的MD5: " + FileUtils.md5Encode(dataPackage.getData()).trim());
                 if (!equals) {
                     // TODO 发送错误信息
                     System.err.println("内容错误");
@@ -139,7 +139,7 @@ public class FileDownloadThread extends Thread {
                 // 写入文件
                 String s = new String(dataPackage.getLength(), StandardCharsets.UTF_8).trim();
                 int len = Integer.parseInt(s);
-                System.err.println("i = " + i + "\tlen = " + len);
+//                System.err.println("i = " + i + "\tlen = " + len);
                 synchronized (this) {
                     bos.write(dataPackage.getData(), 0, len);
                     bos.flush();
@@ -149,9 +149,6 @@ public class FileDownloadThread extends Thread {
                 byte[] sendBuffer = "OK".getBytes();
                 DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, serverInetAddress, serverPort);
                 client.send(sendPacket);
-
-                System.out.println();
-
                 i++;
             }
 

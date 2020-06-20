@@ -10,7 +10,7 @@ class FileUtilsTest {
     @Test
     void getMD5() {
         try {
-            File file1 = new File("C:\\FastDownload\\Data\\1.txt");
+            File file1 = new File("C:\\FastDownload\\Data\\1.mp3");
             String md51 = FileUtils.getMD5(file1);
             System.out.println(md51);
 
