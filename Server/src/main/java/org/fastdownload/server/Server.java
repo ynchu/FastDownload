@@ -2,6 +2,7 @@ package org.fastdownload.server;
 
 import lombok.extern.log4j.Log4j2;
 import org.fastdownload.server.thread.CheckLoginThread;
+import org.fastdownload.server.thread.SendFileServer;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -37,13 +38,13 @@ public class Server {
                 server.receive(packet);
 
                 String s = new String(packet.getData(), StandardCharsets.UTF_8).trim();
-                if ("我是客户端".equals(s.trim())) {
+                if ("DownloadRequest".equals(s.trim())) {
                     log.info("客户端连接");
                     count++;
                     log.info("第 " + count + " 个客户端连接");
-                    // TODO 每个下载添加一个线程
-//                    Thread thread = new Thread(new ServerThread(packet));
-//                    thread.start();
+                    // 创建下载线程
+                    Thread thread = new SendFileServer(packet);
+                    thread.start();
                 } else if ("LoginRequest".equals(s)) {
                     // 客户端发出登录请求，开启校验登录线程并执行
                     log.info("客户端登录校验");
