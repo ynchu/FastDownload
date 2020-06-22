@@ -137,7 +137,6 @@ public class SendFileService extends Thread {
             // 3. 拆分文件，并且封装如FileBlock中
             RandomAccessFile raf = new RandomAccessFile(file, "r");
             long blockLength = fileLength / N;
-            System.err.println("blockLength: " + blockLength);
             for (int i = 0; i < N; i++) {
                 long start = i * blockLength;
                 long end = (i + 1) * blockLength;
