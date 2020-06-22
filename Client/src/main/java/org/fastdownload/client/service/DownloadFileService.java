@@ -198,7 +198,6 @@ public class DownloadFileService extends Thread {
             }
 
             // 结束时校验等
-            System.err.println(fileTableIndex);
             Platform.runLater(() -> {
                 fileTable.setFileState("校验中... ");
                 mwc.update(fileTableIndex, fileTable);
