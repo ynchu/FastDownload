@@ -63,7 +63,20 @@ public class LoginController {
         int i = checkLogin.handle(user);
         if (UserType.GENERAL.getCode() == i) {
             System.err.println("跳转一般用户界面");
-            // TODO 跳转一般用户界面，这里没有上传功能
+
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/org/fastdownload/client/gui/view/MainWindow.fxml"));
+            fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
+            Parent root = null;
+            try {
+                root = fxmlLoader.load();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            assert root != null;
+            Scene scene = new Scene(root, 600, 400);
+            Client.setScene(scene);
+            Client.stage.setResizable(true);
+
         } else if (UserType.ADMINISTRATOR.getCode() == i) {
             System.err.println("跳转管理员界面");
 

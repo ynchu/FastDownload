@@ -2,8 +2,10 @@ package org.fastdownload.client.service;
 
 import lombok.extern.log4j.Log4j2;
 import org.fastdownload.client.entity.User;
+import org.fastdownload.client.util.FileUtils;
 import org.fastdownload.client.util.JsonUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -71,11 +73,17 @@ public class CheckLogin {
 
             log.info("线程 " + Thread.currentThread().getName() + "结束!");
 
+            int returnValue = -1;
             if ("1".equals(returnMsg.trim())) {
-                return 1;
+                returnValue = 1;
             } else if ("2".equals(returnMsg.trim())) {
-                return 2;
+                returnValue = 2;
             }
+
+            // 序列化对象
+            FileUtils.writeObject(user, new File("docs/account.obj"));
+
+            return returnValue;
         } catch (IOException e) {
             e.printStackTrace();
         }

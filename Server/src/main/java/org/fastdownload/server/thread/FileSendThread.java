@@ -64,7 +64,23 @@ public class FileSendThread extends Thread {
         log.info("线程 " + threadId + " 开始...");
         try {
             startSignal.await();
-            doWork();
+
+            // 1. 确保与客户端接收线程连接
+            if (!checkConnect()) {
+                log.error(threadId + " 连接失败!");
+                return;
+            }
+            log.info(threadId + " 连接成功");
+
+            // 如果重传数大于5次，直接放弃
+            int c = 1;
+            while (!doWork()) {
+                c++;
+                if (c > 5) {
+                    break;
+                }
+            }
+
         } catch (InterruptedException ignored) {
         } finally {
             doneSignal.countDown();
@@ -72,14 +88,7 @@ public class FileSendThread extends Thread {
         log.info("线程 " + threadId + " 结束");
     }
 
-    void doWork() {
-        // 1. 确保与客户端接收线程连接
-        if (!checkConnect()) {
-            log.error(threadId + " 连接失败!");
-            return;
-        }
-        log.info(threadId + " 连接成功");
-
+    private boolean doWork() {
         try {
             // 2. 发送线程ID，方便客户端创建临时文件
             byte[] sendBuffer = (threadId + "").getBytes();
@@ -125,7 +134,7 @@ public class FileSendThread extends Thread {
                 String returnMsg = new String(receivePacket.getData(), 0, receivePacket.getLength(), StandardCharsets.UTF_8).trim();
                 if (!"OK".equals(returnMsg)) {
                     System.err.println("没有收到 客户端接收了文件块" + i + " 的确认");
-                    // TODO 暂不处理重传
+                    return false;
                 }
                 i = i + n;
                 c++;
@@ -144,10 +153,12 @@ public class FileSendThread extends Thread {
             String returnMsg = new String(receivePacket.getData(), 0, receivePacket.getLength(), StandardCharsets.UTF_8).trim();
             if ("ReceiveOver".equals(returnMsg)) {
                 System.err.println("收到 客户端接收了文件传输结束 的确认");
+                return true;
             }
         } catch (IOException e) {
             log.error(e.getMessage());
         }
+        return false;
     }
 
     /**

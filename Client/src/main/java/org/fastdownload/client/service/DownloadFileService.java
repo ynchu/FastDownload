@@ -10,6 +10,7 @@ import org.fastdownload.client.Client;
 import org.fastdownload.client.entity.FileBasicInfo;
 import org.fastdownload.client.entity.FileTable;
 import org.fastdownload.client.entity.FileTableEntity;
+import org.fastdownload.client.entity.User;
 import org.fastdownload.client.gui.controller.DownloadWindowController;
 import org.fastdownload.client.gui.controller.MainWindowController;
 import org.fastdownload.client.thread.FileDownloadThread;
@@ -94,16 +95,23 @@ public class DownloadFileService extends Thread {
 
     @Override
     public void run() {
-        doWork();
-    }
-
-    public void doWork() {
         if (!checkConnect()) {
             log.error("连接失败!");
             // 连接失败继续执行连接
         }
         log.info("连接成功");
 
+        // 如果重传数大于5次，直接放弃
+        int c = 1;
+        while (!doWork()) {
+            c++;
+            if (c > 5) {
+                break;
+            }
+        }
+    }
+
+    public boolean doWork() {
         try {
             // 1. 发送需要下载的文件名
             byte[] sendBuffer = fileName.getBytes();
@@ -121,7 +129,7 @@ public class DownloadFileService extends Thread {
                 Platform.runLater(() -> {
                     controller.update(1, "服务端没有这个文件");
                 });
-                return;
+                return true;
             }
             log.info("开始上传文件内容");
 
@@ -202,18 +210,34 @@ public class DownloadFileService extends Thread {
                 fileTable.setFileState("校验中... ");
                 mwc.update(fileTableIndex, fileTable);
             });
-            // 合并临时文件
-            FileUtils.mergeFile(fileBasicInfo.getName(), fileBasicInfo.getBlockNum());
-            // 计算MD5码
-            String md5 = FileUtils.getMD5(new File(FileUtils.getDefaultDirectory() + File.separator + fileName));
-            System.out.println(md5);
-            System.out.println(fileBasicInfo.getMd5());
-            assert md5 != null;
-            boolean equals = md5.equals(fileBasicInfo.getMd5());
-            System.out.println(equals);
 
+            // 校验MD5码,可能出现合并错误,所以循环几次
+            String md5;
+            boolean equals;
+            int c = 1;
+            while (true) {
+                // 合并临时文件
+                FileUtils.mergeFile(fileBasicInfo.getName(), fileBasicInfo.getBlockNum());
+                // 计算MD5码
+                md5 = FileUtils.getMD5(new File(FileUtils.getDefaultDirectory() + File.separator + fileName));
+                System.out.println(md5);
+                System.out.println(fileBasicInfo.getMd5());
+                assert md5 != null;
+                equals = md5.equals(fileBasicInfo.getMd5());
+                System.out.println(equals);
+                c++;
+                if (c > 5 || equals) {
+                    break;
+                }
+            }
+
+            if (!equals) {
+                return false;
+            }
+
+            boolean finalEquals = equals;
             Platform.runLater(() -> {
-                if (equals) {
+                if (finalEquals) {
                     fileTable.setFileState("下载完成");
                 } else {
                     fileTable.setFileState("校验出错");
@@ -228,8 +252,10 @@ public class DownloadFileService extends Thread {
                         FileTableEntity fileTableEntity = ft.toFileTableEntity();
                         list.add(fileTableEntity);
                     }
-                    org.apache.commons.io.FileUtils.writeStringToFile(new File("docs/record.json"), JsonUtils.toJson(list), "utf-8");
-                } catch (IOException e) {
+                    User user = (User) org.fastdownload.client.util.FileUtils.readObject(new File("docs/account.obj"));
+                    String path = "docs/" + user.getId() + "_record.json";
+                    org.apache.commons.io.FileUtils.writeStringToFile(new File(path), JsonUtils.toJson(list), "utf-8");
+                } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
                 }
             });
@@ -251,6 +277,7 @@ public class DownloadFileService extends Thread {
         isRun = true;
 
         log.info("下载完成");
+        return true;
     }
 
     /**

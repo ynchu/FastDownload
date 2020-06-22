@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Log4j2
 public class FileUtils {
-    public static String getMD5(File file) throws IOException {
+    public static synchronized String getMD5(File file) throws IOException {
         // 开始时的当前时间
         long startTime = System.currentTimeMillis();
 
@@ -42,7 +42,7 @@ public class FileUtils {
      * @param bytes 字符数组
      * @return MD5码
      */
-    public static String md5Encode(byte[] bytes) {
+    public static synchronized String md5Encode(byte[] bytes) {
         return DigestUtils.md5Hex(bytes);
     }
 
@@ -51,7 +51,7 @@ public class FileUtils {
      *
      * @return String
      */
-    public static String getDefaultDirectory() {
+    public static synchronized String getDefaultDirectory() {
         FileSystemView fileSystemView = FileSystemView.getFileSystemView();
         File defaultDirectory = fileSystemView.getDefaultDirectory();
         // 创建软件下载文件夹
@@ -74,7 +74,7 @@ public class FileUtils {
      *
      * @return String
      */
-    public static String getDefaultTempDirectory() {
+    public static synchronized String getDefaultTempDirectory() {
         // 创建软件下载文件夹
         File parentFile = new File(getDefaultDirectory() + File.separator + "Temp");
         if (!parentFile.exists()) {
@@ -90,7 +90,7 @@ public class FileUtils {
         return parentFile.getAbsolutePath();
     }
 
-    public static String getFileNameWithSuffix(String fileName) {
+    public static synchronized String getFileNameWithSuffix(String fileName) {
         int i = fileName.lastIndexOf(".");
         if (i < 0) {
             return null;
@@ -105,7 +105,7 @@ public class FileUtils {
      * @param partCount 文件被分为几个部分
      * @throws IOException 文件未找到
      */
-    public static void mergeFile(String fileName, long partCount) throws IOException {
+    public static synchronized void mergeFile(String fileName, long partCount) throws IOException {
         List<FileInputStream> inputs = new ArrayList<>();
         for (int i = 0; i < partCount; i++) {
             String sourcePath = getDefaultTempDirectory() + File.separator + fileName + "_" + i + ".temp";
@@ -136,7 +136,7 @@ public class FileUtils {
      * @param path 文件绝对路径
      * @return boolean，删除成功，返回true
      */
-    public static boolean deleteFile(String path) {
+    public static synchronized boolean deleteFile(String path) {
         File file = new File(path);
         // 路径为文件且不为空则进行删除
         if (file.isFile() && file.exists()) {
@@ -144,4 +144,31 @@ public class FileUtils {
         }
         return false;
     }
+
+    /**
+     * 将对象写入文件
+     *
+     * @param object 需要写的对象
+     * @param file   需要写入的文件
+     * @throws IOException IO异常
+     */
+    public static synchronized void writeObject(Object object, File file) throws IOException {
+        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
+        oos.writeObject(object);
+        oos.close();
+    }
+
+    /**
+     * 从文件中读取对象
+     *
+     * @param file 需要写入的文件
+     * @throws IOException IO异常
+     */
+    public static synchronized Object readObject(File file) throws IOException, ClassNotFoundException {
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
+        Object object = ois.readObject();
+        ois.close();
+        return object;
+    }
+
 }

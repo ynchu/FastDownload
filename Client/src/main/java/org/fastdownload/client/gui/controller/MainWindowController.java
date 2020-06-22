@@ -25,16 +25,19 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.fastdownload.client.Client;
 import org.fastdownload.client.entity.FileTable;
 import org.fastdownload.client.entity.FileTableEntity;
+import org.fastdownload.client.entity.User;
 import org.fastdownload.client.util.JsonUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+@Log4j2
 public class MainWindowController {
     @FXML
     private AnchorPane root;
@@ -156,6 +159,16 @@ public class MainWindowController {
         fileStateList.setCellValueFactory(param -> param.getValue().getFileState());
         connectTimeList.setCellValueFactory(param -> param.getValue().getConnectTime());
 
+        try {
+            User user = (User) org.fastdownload.client.util.FileUtils.readObject(new File("docs/account.obj"));
+            // 是一般用户
+            if (user.getType() == 2) {
+                menuBar.getMenus().remove(1);
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            log.error("账户文件找不到");
+        }
+
         no.setCellFactory(new Callback<TableColumn<String, Number>, TableCell<String, Number>>() {
             @Override
             public TableCell<String, Number> call(TableColumn<String, Number> param) {
@@ -174,14 +187,16 @@ public class MainWindowController {
 
         try {
             // 读取下载历史
-            String json = FileUtils.readFileToString(new File("docs/record.json"), "utf-8");
+            User user = (User) org.fastdownload.client.util.FileUtils.readObject(new File("docs/account.obj"));
+            String path = "docs/" + user.getId() + "_record.json";
+            String json = FileUtils.readFileToString(new File(path), "utf-8");
             if (json != null) {
                 List<FileTableEntity> list = JsonUtils.toObject(json, new TypeToken<List<FileTableEntity>>() {
                 }.getType());
                 list.forEach(e -> data.add(new FileTable(e)));
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | ClassNotFoundException e) {
+            log.error(e.getMessage());
         }
 
         fileTable.setItems(data);

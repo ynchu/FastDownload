@@ -72,7 +72,23 @@ public class FileDownloadThread extends Thread {
         log.info("线程 " + Thread.currentThread().getName() + " 开始...");
         try {
             startSignal.await();
-            doWork();
+
+            if (!checkConnect()) {
+                log.error("连接失败!");
+                return;
+            }
+            log.info("连接成功");
+
+            // 如果重传数大于5次，直接放弃
+            int c = 1;
+            while (!doWork()) {
+                log.warn("第" + c + "次重传");
+                c++;
+                if (c > 5) {
+                    break;
+                }
+            }
+
         } catch (InterruptedException ignored) {
         } finally {
             doneSignal.countDown();
@@ -80,13 +96,7 @@ public class FileDownloadThread extends Thread {
         log.info("线程 " + Thread.currentThread().getName() + " 结束");
     }
 
-    private void doWork() {
-        if (!checkConnect()) {
-            log.error("连接失败!");
-            return;
-        }
-        log.info("连接成功");
-
+    private boolean doWork() {
         try {
             // 接收线程服务端ID，方便创建临时文件名
             byte[] receiveBuffer = new byte[4192];
@@ -113,7 +123,6 @@ public class FileDownloadThread extends Thread {
             DataPackage dataPackage = new DataPackage();
             // 接收块大小
             byte[] receiveBuf;
-            // TODO 暂时没加入重传功能
             while (true) {
                 // 接收文件内容
                 receiveBuf = new byte[4192];
@@ -131,8 +140,8 @@ public class FileDownloadThread extends Thread {
                 // MD5码校验
                 boolean equals = FileUtils.md5Encode(dataPackage.getData()).trim().equals(new String(dataPackage.getCheck(), StandardCharsets.UTF_8).trim());
                 if (!equals) {
-                    // TODO 发送错误信息
-                    System.err.println("内容错误");
+                    log.warn("内容错误,请求重传");
+                    return false;
                 }
 
                 // 写入文件
@@ -158,6 +167,7 @@ public class FileDownloadThread extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return true;
     }
 
     /**

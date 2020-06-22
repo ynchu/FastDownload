@@ -10,16 +10,16 @@ class FileUtilsTest {
     @Test
     void getMD5() {
         try {
-            File file1 = new File("C:\\FastDownload\\Data\\1.mp3");
+            File file1 = new File("C:\\FastDownload\\Data\\Word 中的键盘快捷方式 - Office 支持.pdf");
             String md51 = FileUtils.getMD5(file1);
             System.out.println(md51);
 
-            File file2 = new File("D:\\Users\\Administrator\\Documents\\FastDownload\\Data\\1.txt");
-            String md52 = FileUtils.getMD5(file2);
-            System.out.println(md52);
+//            File file2 = new File("D:\\Users\\Administrator\\Documents\\FastDownload\\Data\\1.txt");
+//            String md52 = FileUtils.getMD5(file2);
+//            System.out.println(md52);
 
-            assert md51 != null;
-            System.out.println(md51.equals(md52));
+//            assert md51 != null;
+//            System.out.println(md51.equals(md52));
 
 
         } catch (IOException e) {

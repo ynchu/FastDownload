@@ -82,17 +82,25 @@ public class SendFileService extends Thread {
 
     @Override
     public void run() {
-        doWork();
-    }
-
-    private void doWork() {
-        log.info("线程 " + Thread.currentThread().getName() + " 开始...");
-
         if (!checkConnect()) {
             log.error("连接失败!");
             return;
         }
         log.info("连接成功");
+
+        // 如果重传数大于5次，直接放弃
+        int c = 1;
+        while (!doWork()) {
+            c++;
+            if (c > 5) {
+                break;
+            }
+        }
+    }
+
+    private boolean doWork() {
+        log.info("线程 " + Thread.currentThread().getName() + " 开始...");
+
 
         byte[] sendBuffer;
         byte[] receiveBuffer = new byte[4192];
@@ -178,6 +186,7 @@ public class SendFileService extends Thread {
         isRun = false;
         log.info("线程 " + Thread.currentThread().getName() + " 下载服务端线程关闭");
         log.info("线程 " + Thread.currentThread().getName() + " 结束!");
+        return true;
     }
 
     /**
