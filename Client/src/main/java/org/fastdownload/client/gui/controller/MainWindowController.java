@@ -74,7 +74,6 @@ public class MainWindowController {
 
     private final static Object lock = new Object();
 
-
     @FXML
     void aboutThis(ActionEvent event) {
         System.out.println("关于软件");

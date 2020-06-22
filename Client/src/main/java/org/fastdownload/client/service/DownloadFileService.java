@@ -129,6 +129,7 @@ public class DownloadFileService extends Thread {
                 Platform.runLater(() -> {
                     controller.update(1, "服务端没有这个文件");
                 });
+                isRun = true;
                 return true;
             }
             log.info("开始上传文件内容");

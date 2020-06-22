@@ -10,7 +10,7 @@ class FileUtilsTest {
     @Test
     void getMD5() {
         try {
-            File file1 = new File("C:\\FastDownload\\Data\\Word 中的键盘快捷方式 - Office 支持.pdf");
+            File file1 = new File("C:\\FastDownload\\Data\\灵笼：第2话_国创_bilibili_哔哩哔哩.flv");
             String md51 = FileUtils.getMD5(file1);
             System.out.println(md51);
 
