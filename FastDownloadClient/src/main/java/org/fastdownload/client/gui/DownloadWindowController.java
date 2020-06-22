@@ -91,7 +91,6 @@ public class DownloadWindowController {
         if (c > 30) {
             getList().remove(0);
         }
-        DataPackage dataPackage = new DataPackage();
         getList().add("已下载第 " + c + " 块数据块, 该数据块长度为 " + dataLength + " 位, 总共 " + total + " 个数据块, 已完成 " + String.format("%.2f", c / total * 100) + "%.");
         getListView().scrollTo(getList().size());
     }

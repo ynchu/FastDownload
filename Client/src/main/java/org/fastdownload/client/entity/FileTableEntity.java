@@ -4,18 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
 /**
- * 用户实体类
+ * FileTable
  *
  * @author Administrator
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements Serializable {
-    private String id;
-    private String pwd;
-    private int type;
+public class FileTableEntity {
+    private String fileName;
+    private long fileSize;
+    private String fileState;
+    private String connectTime;
 }

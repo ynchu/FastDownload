@@ -1,5 +1,6 @@
 package org.fastdownload.server.thread;
 
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.fastdownload.server.entity.FileBasicInfo;
 import org.fastdownload.server.entity.FileBlock;
@@ -26,7 +27,7 @@ import java.util.concurrent.CountDownLatch;
  * @author Administrator
  */
 @Log4j2
-public class SendFileServer extends Thread {
+public class SendFileService extends Thread {
     /**
      * 客户端IP信息
      */
@@ -45,19 +46,15 @@ public class SendFileServer extends Thread {
     /**
      * 线程是否运行
      */
-    private volatile boolean isRun = true;
-
-    /**
-     * 超时发送的次数
-     */
-    private final static int TIMEOUT_COUNT = 5;
+    @Getter
+    private volatile boolean isRun = false;
 
     /**
      * 初始化类的数据
      *
      * @param packet 客户端传入的包，包含IP、端口等信息
      */
-    public SendFileServer(DatagramPacket packet) {
+    public SendFileService(DatagramPacket packet) {
         this.clientInetAddress = packet.getAddress();
         this.clientPort = packet.getPort();
         initServerSocket();
@@ -83,11 +80,12 @@ public class SendFileServer extends Thread {
         this.clientPort = packet.getPort();
     }
 
-    public SendFileServer() {
-    }
-
     @Override
     public void run() {
+        doWork();
+    }
+
+    private void doWork() {
         log.info("线程 " + Thread.currentThread().getName() + " 开始...");
 
         if (!checkConnect()) {
@@ -107,7 +105,7 @@ public class SendFileServer extends Thread {
         final int N = 10;
         CountDownLatch startSignal = new CountDownLatch(1);
         CountDownLatch doneSignal = new CountDownLatch(N);
-        // TODO 文件分块
+        // 文件分块
         FileBlock[] fileBlocks = new FileBlock[N];
 
         try {
@@ -121,24 +119,20 @@ public class SendFileServer extends Thread {
             FileInfoService fileInfoService = new FileInfoServiceImpl();
             List<FileInfo> fileInfos = (List<FileInfo>) fileInfoService.findByName(fileName);
 
-            System.out.println(fileInfos == null);
-
-            if (fileInfos == null) {
-                log.error("未找到文件");
-                return;
+            if (fileInfos.size() == 0) {
+                // 发送完不需要关闭，超时会自动关闭
+                sendBuffer = "NoSuchFile".getBytes(StandardCharsets.UTF_8);
+            } else {
+                sendBuffer = "StartSend".getBytes(StandardCharsets.UTF_8);
             }
-
-            System.out.println(JsonUtils.toJson(fileInfos));
+            DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, clientInetAddress, clientPort);
+            server.send(sendPacket);
 
             // TODO 先默认只发送第一本书,之后会根据链接查询,这样就有唯一性
-//            FileInfo fileInfo = fileInfos.get(0);
-//            String location = fileInfo.getLocation();
-            String location = "C:\\FastDownload\\Data\\" + fileName;
+            FileInfo fileInfo = fileInfos.get(0);
+            String location = fileInfo.getLocation();
             File file = new File(location);
             long fileLength = file.length();
-
-            System.err.println("fileLength: " + fileLength);
-
 
             // 3. 拆分文件，并且封装如FileBlock中
             RandomAccessFile raf = new RandomAccessFile(file, "r");
@@ -154,28 +148,23 @@ public class SendFileServer extends Thread {
                     }
                 }
                 fileBlocks[i] = new FileBlock(start, end, raf);
-                System.err.println(i + ": " + fileBlocks[i]);
             }
 
             // 4. 发送查询到的文件基本信息，然后直接封装成JSON发送
+
             // 文件名,文件大小,文件MD5码,文件块数目
-//            FileBasicInfo basicInfo = new FileBasicInfo(file.getName(), fileLength, fileInfo.getMd5(), N);
             FileBasicInfo basicInfo = new FileBasicInfo(file.getName(), fileLength, FileUtils.getMD5(file), N);
             String jsonData = JsonUtils.toJson(basicInfo);
-            System.out.println(jsonData);
             sendBuffer = jsonData.getBytes(StandardCharsets.UTF_8);
-            DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, clientInetAddress, clientPort);
+            sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, clientInetAddress, clientPort);
             server.send(sendPacket);
 
             // 5. 发送文件的具体内容
-            // create and start threads
-            // TODO 开线程分段发送数据
             for (int i = 0; i < N; i++) {
-                System.err.println(i);
+                // 开线程分段发送数据
                 Thread thread = new FileSendThread(i, fileBlocks[i], receivePacket, startSignal, doneSignal);
                 thread.start();
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -187,10 +176,8 @@ public class SendFileServer extends Thread {
             e.printStackTrace();
         }
 
-        // TODO 结束时校验等
-
-        System.err.println("下载服务端线程关闭");
-
+        isRun = false;
+        log.info("线程 " + Thread.currentThread().getName() + " 下载服务端线程关闭");
         log.info("线程 " + Thread.currentThread().getName() + " 结束!");
     }
 

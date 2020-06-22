@@ -22,8 +22,8 @@ import java.util.concurrent.CountDownLatch;
 public class FileSendThread extends Thread {
     private final static int BUFFER_LENGTH = 4096;
 
-    private int threadId;
-    private FileBlock fileBlock;
+    private final int threadId;
+    private final FileBlock fileBlock;
     private final CountDownLatch startSignal;
     private final CountDownLatch doneSignal;
 
@@ -80,7 +80,6 @@ public class FileSendThread extends Thread {
         }
         log.info(threadId + " 连接成功");
 
-
         try {
             // 2. 发送线程ID，方便客户端创建临时文件
             byte[] sendBuffer = (threadId + "").getBytes();
@@ -88,37 +87,22 @@ public class FileSendThread extends Thread {
             server.send(firstPackage);
 
             // 3. 发送文件块内容
-            long length = fileBlock.getEnd() - fileBlock.getStart();
-
-
-            System.err.println("线程" + threadId + "" + "\tstart = " + fileBlock.getStart() + "\tend = " + fileBlock.getEnd());
-
-            long times = (length % BUFFER_LENGTH == 0) ? length / BUFFER_LENGTH
-                    : length / BUFFER_LENGTH + 1;
             fileBlock.getRaf().seek(fileBlock.getStart());
-
             DataPackage dataPackage = new DataPackage();
-
             byte[] sendBuf = new byte[BUFFER_LENGTH];
-
-//            System.err.println("线程" + threadId + "" + "\tlength = " + length + ", times = " + times);
-//            System.out.println();
-
             long start = fileBlock.getStart();
             long end = fileBlock.getEnd();
+            // 读取的字符长度
             int n;
-            long i = start;
-            int len = BUFFER_LENGTH;
+            // 读取次数
             long c = 0;
+            // 当前读取的位置
+            long i = start;
             while (i < end) {
                 // 剩余长度
                 int surplus = (int) (end - i);
-                System.err.println("线程" + threadId + " 剩余 " + surplus);
                 if (surplus < BUFFER_LENGTH && surplus > 0) {
-                    len = surplus;
-                    byte[] bytes = new byte[len];
-                    System.arraycopy(sendBuf, 0, bytes, 0, len);
-                    sendBuf = bytes;
+                    sendBuf = new byte[surplus];
                 }
                 synchronized (lock) {
                     fileBlock.getRaf().seek(i);
@@ -128,21 +112,17 @@ public class FileSendThread extends Thread {
                     System.err.println("线程" + threadId + " n < 0, n = " + n);
                     break;
                 }
-                System.err.println("线程" + threadId + "" + "\ti = " + i + "\tn = " + n + "\tc = " + c);
 
                 // 发送
-                byte[] packet = dataPackage.createPacket((i + "").getBytes(), sendBuf);
+                byte[] packet = dataPackage.createPacket((c + "").getBytes(), sendBuf);
                 DatagramPacket sendPacket = new DatagramPacket(packet, packet.length, clientInetAddress, clientPort);
                 server.send(sendPacket);
-
-//                System.out.println("线程" + threadId + "" + "\t" + "length = " + new String(dataPackage.getLength()).trim());
-//                System.out.println("线程" + threadId + "" + "\t" + new String(dataPackage.getCheck()).trim());
 
                 byte[] receiveBuf = new byte[4096];
                 DatagramPacket receivePacket = new DatagramPacket(receiveBuf, receiveBuf.length);
                 server.receive(receivePacket);
-                String returnMsg = new String(receivePacket.getData(), 0, receivePacket.getLength(), StandardCharsets.UTF_8).trim();
 
+                String returnMsg = new String(receivePacket.getData(), 0, receivePacket.getLength(), StandardCharsets.UTF_8).trim();
                 if (!"OK".equals(returnMsg)) {
                     System.err.println("没有收到 客户端接收了文件块" + i + " 的确认");
                     // TODO 暂不处理重传
@@ -151,79 +131,12 @@ public class FileSendThread extends Thread {
                 c++;
             }
 
-
-//            for (int i = 0; i < times; i++) {
-//                // TODO 与之前发送部分相同，需要重新设计一下包，直接加一个第几个线程的字段
-//
-//                synchronized (lock) {
-//                    n = fileBlock.getRaf().read(sendBuf);
-//                }
-//
-//                if (n < 0) {
-//                    System.err.println("n < 0, n = " + n);
-//                    break;
-//                }
-//
-//                if (n < BUFFER_LENGTH && n > 0) {
-//                    byte[] bytes = new byte[n];
-//                    System.arraycopy(sendBuf, 0, bytes, 0, n);
-//                    sendBuf = bytes;
-//                }
-//
-//                System.err.println("线程" + threadId + "" + "\ti = " + i + "\tn = " + n);
-//
-//                // 发送
-//                byte[] packet = dataPackage.createPacket((i + "").getBytes(), sendBuf);
-//                DatagramPacket sendPacket = new DatagramPacket(packet, packet.length, clientInetAddress, clientPort);
-//                server.send(sendPacket);
-//
-//                System.out.println("线程" + threadId + "" + "\t" + "length = " + new String(dataPackage.getLength()).trim());
-//
-//                System.out.println("线程" + threadId + "" + "\t" + new String(dataPackage.getCheck()).trim());
-//
-//                byte[] receiveBuf = new byte[4096];
-//                DatagramPacket receivePacket = new DatagramPacket(receiveBuf, receiveBuf.length);
-//                server.receive(receivePacket);
-//                String returnMsg = new String(receivePacket.getData(), 0, receivePacket.getLength(), StandardCharsets.UTF_8).trim();
-//
-//                if (!"OK".equals(returnMsg)) {
-//                    System.err.println("没有收到 客户端接收了文件块" + i + " 的确认");
-//                    // TODO 暂不处理重传
-//                }
-//            }
-
-//            int i = 0;
-//            while ((n = fileBlock.getRaf().read(sendBuf)) != -1) {
-//                // TODO 与之前发送部分相同，需要重新设计一下包，直接加一个第几个线程的字段
-//                if (n < BUFFER_LENGTH) {
-//                    byte[] bytes = new byte[n];
-//                    System.arraycopy(sendBuf, 0, bytes, 0, n);
-//                    sendBuf = bytes;
-//                }
-//
-//                // 发送
-//                byte[] packet = dataPackage.createPacket((i + "").getBytes(), sendBuf);
-//                DatagramPacket sendPacket = new DatagramPacket(packet, packet.length, clientInetAddress, clientPort);
-//                server.send(sendPacket);
-//
-//                byte[] receiveBuf = new byte[4096];
-//                DatagramPacket receivePacket = new DatagramPacket(receiveBuf, receiveBuf.length);
-//                server.receive(receivePacket);
-//                String returnMsg = new String(receivePacket.getData(), 0, receivePacket.getLength(), StandardCharsets.UTF_8).trim();
-//
-//                if (!"OK".equals(returnMsg)) {
-//                    System.err.println("没有收到 客户端接收了文件块" + i + " 的确认");
-//                    // TODO 暂不处理重传
-//                }
-//                i++;
-//            }
-
-
-            // 判断客户端是否收到
+            // 判断客户端是否收到，需要封装成包
             sendBuffer = "SendOver".getBytes();
-            byte[] packet = dataPackage.createPacket("over".getBytes(), sendBuffer);
+            byte[] packet = dataPackage.createPacket("".getBytes(), sendBuffer);
             DatagramPacket sendPacket = new DatagramPacket(packet, packet.length, clientInetAddress, clientPort);
             server.send(sendPacket);
+            log.info("发送发送完毕标志");
 
             byte[] receiveBuf = new byte[1024];
             DatagramPacket receivePacket = new DatagramPacket(receiveBuf, receiveBuf.length);
@@ -232,10 +145,8 @@ public class FileSendThread extends Thread {
             if ("ReceiveOver".equals(returnMsg)) {
                 System.err.println("收到 客户端接收了文件传输结束 的确认");
             }
-
         } catch (IOException e) {
-//            e.printStackTrace();
-            System.err.println(e.getMessage());
+            log.error(e.getMessage());
         }
     }
 

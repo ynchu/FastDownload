@@ -101,8 +101,7 @@ public class CheckLoginThread extends Thread {
             DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, clientInetAddress, clientPort);
             server.send(sendPacket);
         } catch (IOException e) {
-            log.error("数据库连接失败");
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         log.info("线程 " + Thread.currentThread().getName() + " 结束!");
     }

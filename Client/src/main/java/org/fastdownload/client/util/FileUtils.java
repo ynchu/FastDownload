@@ -101,14 +101,14 @@ public class FileUtils {
     /**
      * 合并文件
      *
-     * @param fileName  文件名，不需要加路径（路径默认）
+     * @param fileName  文件名包括后缀，不需要加路径（路径默认）
      * @param partCount 文件被分为几个部分
      * @throws IOException 文件未找到
      */
     public static void mergeFile(String fileName, long partCount) throws IOException {
         List<FileInputStream> inputs = new ArrayList<>();
         for (int i = 0; i < partCount; i++) {
-            String sourcePath = getDefaultTempDirectory() + File.separator + FileUtils.getFileNameWithSuffix(fileName) + "_" + i + ".temp";
+            String sourcePath = getDefaultTempDirectory() + File.separator + fileName + "_" + i + ".temp";
             inputs.add(new FileInputStream(sourcePath));
         }
 

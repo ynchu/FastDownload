@@ -45,6 +45,8 @@ public class FileDownloadThread extends Thread {
      */
     private int serverPort;
 
+    public long size;
+
 
     /**
      * 初始化类的数据
@@ -59,7 +61,9 @@ public class FileDownloadThread extends Thread {
         this.doneSignal = doneSignal;
         try {
             this.client = new DatagramSocket();
+            this.client.setSoTimeout(20000);
         } catch (SocketException ignored) {
+            log.warn("超时断开连接");
         }
     }
 
@@ -81,7 +85,7 @@ public class FileDownloadThread extends Thread {
             log.error("连接失败!");
             return;
         }
-        System.err.println("连接成功");
+        log.info("连接成功");
 
         try {
             // 接收线程服务端ID，方便创建临时文件名
@@ -90,11 +94,9 @@ public class FileDownloadThread extends Thread {
             client.receive(receivePacket);
             String id = new String(receivePacket.getData(), StandardCharsets.UTF_8).trim();
 
-            System.out.println(new String(receivePacket.getData(), StandardCharsets.UTF_8) + ".temp");
-
             // 创建临时文件
             String tempDirectory = FileUtils.getDefaultTempDirectory();
-            String tempFileName = tempDirectory + File.separator + FileUtils.getFileNameWithSuffix(fileName) + "_" + id + ".temp";
+            String tempFileName = tempDirectory + File.separator + fileName + "_" + id + ".temp";
             File tempFile = new File(tempFileName.trim());
 
             if (!tempFile.exists()) {
@@ -112,7 +114,6 @@ public class FileDownloadThread extends Thread {
             // 接收块大小
             byte[] receiveBuf;
             // TODO 暂时没加入重传功能
-            int i = 0;
             while (true) {
                 // 接收文件内容
                 receiveBuf = new byte[4192];
@@ -129,8 +130,6 @@ public class FileDownloadThread extends Thread {
 
                 // MD5码校验
                 boolean equals = FileUtils.md5Encode(dataPackage.getData()).trim().equals(new String(dataPackage.getCheck(), StandardCharsets.UTF_8).trim());
-//                System.out.println("线程" + id + " 发送的MD5: " + new String(dataPackage.getCheck(), StandardCharsets.UTF_8).trim());
-//                System.out.println("线程" + id + " 计算的MD5: " + FileUtils.md5Encode(dataPackage.getData()).trim());
                 if (!equals) {
                     // TODO 发送错误信息
                     System.err.println("内容错误");
@@ -139,7 +138,7 @@ public class FileDownloadThread extends Thread {
                 // 写入文件
                 String s = new String(dataPackage.getLength(), StandardCharsets.UTF_8).trim();
                 int len = Integer.parseInt(s);
-//                System.err.println("i = " + i + "\tlen = " + len);
+                size += len;
                 synchronized (this) {
                     bos.write(dataPackage.getData(), 0, len);
                     bos.flush();
@@ -149,13 +148,11 @@ public class FileDownloadThread extends Thread {
                 byte[] sendBuffer = "OK".getBytes();
                 DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, serverInetAddress, serverPort);
                 client.send(sendPacket);
-                i++;
             }
 
             bos.close();
-
             byte[] sendBuffer = "ReceiveOver".getBytes();
-            byte[] packet = dataPackage.createPacket("over".getBytes(), sendBuffer);
+            byte[] packet = dataPackage.createPacket("".getBytes(), sendBuffer);
             DatagramPacket sendPacket = new DatagramPacket(packet, packet.length, serverInetAddress, serverPort);
             client.send(sendPacket);
         } catch (IOException e) {

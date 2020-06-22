@@ -4,14 +4,20 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.JavaFXBuilderFactory;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import org.fastdownload.client.Client;
 import org.fastdownload.client.entity.User;
 import org.fastdownload.client.service.CheckLogin;
 import org.fastdownload.client.util.UserType;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -57,8 +63,22 @@ public class LoginController {
         int i = checkLogin.handle(user);
         if (UserType.GENERAL.getCode() == i) {
             System.err.println("跳转一般用户界面");
+            // TODO 跳转一般用户界面，这里没有上传功能
         } else if (UserType.ADMINISTRATOR.getCode() == i) {
             System.err.println("跳转管理员界面");
+
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/org/fastdownload/client/gui/view/MainWindow.fxml"));
+            fxmlLoader.setBuilderFactory(new JavaFXBuilderFactory());
+            Parent root = null;
+            try {
+                root = fxmlLoader.load();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            assert root != null;
+            Scene scene = new Scene(root, 600, 400);
+            Client.setScene(scene);
+            Client.stage.setResizable(true);
         } else {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.titleProperty().set("错误");
@@ -81,12 +101,13 @@ public class LoginController {
                 UserType.ADMINISTRATOR,
                 UserType.GENERAL
         );
+
         choice.setItems(userTypes);
-        choice.getSelectionModel().select(UserType.GENERAL);
+        // 设置默认选中
+        choice.getSelectionModel().select(UserType.ADMINISTRATOR);
         choice.prefHeightProperty().bind(hBox3.heightProperty());
 
         System.out.println(choice.getValue());
         choice.setOnAction(event -> System.out.println(choice.getValue()));
-
     }
 }
